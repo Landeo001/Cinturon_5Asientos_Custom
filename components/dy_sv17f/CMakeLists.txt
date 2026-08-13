@@ -1,0 +1,10 @@
+idf_component_register(
+    SRCS
+        "dy_sv17f.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        driver
+        log
+        freertos
+)
