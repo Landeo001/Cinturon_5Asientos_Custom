@@ -1,53 +1,33 @@
-| Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-C5 | ESP32-C6 | ESP32-C61 | ESP32-H2 | ESP32-H21 | ESP32-H4 | ESP32-P4 | ESP32-S2 | ESP32-S3 | Linux |
-| ----------------- | ----- | -------- | -------- | -------- | -------- | --------- | -------- | --------- | -------- | -------- | -------- | -------- | ----- |
-
-# Hello World Example
-
-Starts a FreeRTOS task to print "Hello World".
-
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
-
-## How to use example
-
-Follow detailed instructions provided specifically for this example.
-
-Select the instructions depending on Espressif chip installed on your development board:
-
-- [ESP32 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/index.html)
-- [ESP32-S2 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html)
-
-
-## Example folder contents
-
-The project **hello_world** contains one source file in C language [hello_world_main.c](main/hello_world_main.c). The file is located in folder [main](main).
-
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt` files that provide set of directives and instructions describing the project's source files and targets (executable, library, or both).
-
-Below is short explanation of remaining files in the project folder.
-
-```
-├── CMakeLists.txt
-├── pytest_hello_world.py      Python script used for automated testing
-├── main
-│   ├── CMakeLists.txt
-│   └── hello_world_main.c
-└── README.md                  This is the file you are currently reading
-```
-
-For more information on structure and contents of ESP-IDF projects, please refer to Section [Build System](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/build-system.html) of the ESP-IDF Programming Guide.
-
-## Troubleshooting
-
-* Program upload failure
-
-    * Hardware connection is not correct: run `idf.py -p PORT monitor`, and reboot your board to see if there are any output logs.
-    * The baud rate for downloading is too high: lower your baud rate in the `menuconfig` menu, and try again.
-
-## Technical support and feedback
-
-Please use the following feedback channels:
-
-* For technical queries, go to the [esp32.com](https://esp32.com/) forum
-* For a feature request or bug report, create a [GitHub issue](https://github.com/espressif/esp-idf/issues)
-
-We will get back to you as soon as possible.
+INFORME TÉCNICO DE PROYECTOProyecto: Sistema Inteligente de Monitoreo e Indicación de Cinturones de Seguridad (5 Asientos)Plataforma: ESP-IDF / ESP32Repositorio GitHub: git@github.com:Landeo001/Cinturon_5Asientos_Custom.gitFecha: Agosto 20261. RESUMEN EJECUTIVOEl presente documento detalla la arquitectura, lógica de control y especificaciones técnicas del Sistema Inteligente de Monitoreo de Cinturones de Seguridad para Vehículos. El sistema utiliza un microcontrolador ESP32 programado bajo el entorno nativo ESP-IDF y una arquitectura multitarea en tiempo real basada en FreeRTOS.El propósito principal es garantizar la seguridad de los ocupantes mediante:Verificación activa e independiente de ocupación y abrochado de cinturones por asiento.Indicación visual dinámica mediante LED Direccionables NeoPixel (WS2812).Alertas auditivas contextuales y dinámicas mediante el módulo reproductor de audio DY-SV17F.Detección de movimiento vehicular mediante acelerómetro I2C (LIS3DH) con algoritmo de desviación estándar.Adaptabilidad eléctrica configurable de forma individual para cada cinturón ($3.3\text{ V}$ o $0\text{ V} / \text{GND}$).2. DESCRIPCIÓN Y OBJETIVOS DEL SISTEMA2.1 Objetivo GeneralDesarrollar un sistema embebido robusto capaz de gestionar hasta 5 cinturones de seguridad de manera independiente, regulando el arranque/habilitación del vehículo mediante un relé de paso y emitiendo alertas preventivas e infracciones cuando se detecta movimiento sin la correspondiente protección.2.2 Objetivos EspecíficosConfiguración Lógica por Canal: Permitir que cada uno de los 5 asientos configure su nivel de lectura física ($3.3\text{ V}$ o $0\text{ V}$) de forma independiente mediante variables dedicadas.Control Seguro de Ignición: Manejar la desactivación del relé según el abrochado del piloto y la coincidencia con el número de ocupantes declarados.Discriminación de Movimiento: Implementar un búfer circular y cálculo de desviación estándar de aceleración ($\sigma$) para determinar si el vehículo está en movimiento, evitando falsos positivos por sacudidas breves.Registro e Infracciones Dinámicas: Generar trazabilidad en tiempo real de infracciones por asiento con banderas individuales preparadas para telemetría (MQTT/JSON).3. ARQUITECTURA DE HARDWARE3.1 Componentes Principales y Asignación de GPIOsComponenteFunción / DescripciónInterfaz / Pin ESP32Microcontrolador ESP32Procesamiento central e hilos FreeRTOSN/AAcelerómetro LIS3DHDetección de movimiento dinámico de 3 ejesI2C (SDA: GPIO 48, SCL: GPIO 47)Módulo Audio DY-SV17FReproducción de audios de aviso y alertasUART1 TX (GPIO 17)Tira LED WS2812Indicador de estado visual (Verde / Rojo / Apagado)GPIO 13Entrada de ContactoDetección de llave / ignición del vehículoGPIO 41Pulsador de SelecciónSelección manual de tripulantes declaradosGPIO 11Salida de ReléControl de habilitación/corte de igniciónGPIO 1Cinturón PilotoEntrada digital con lógica independienteGPIO 10Cinturón CopilotoEntrada digital con lógica independienteGPIO 9Cinturón Pasajero Izq.Entrada digital con lógica independienteGPIO 46Cinturón Pasajero Med.Entrada digital con lógica independienteGPIO 3Cinturón Pasajero Der.Entrada digital con lógica independienteGPIO 84. LÓGICA DE CONTROL Y FUNCIONALIDAD4.1 Abstracción de Lectura e Independencia por CinturónPara adaptarse a sensores normalmente abiertos (NO) o normalmente cerrados (NC), el sistema define variables globales de configuración lógica para cada asiento:static int g_nivelAbrochadoPiloto      = 1; // 1 = 3.3V, 0 = 0V
+static int g_nivelAbrochadoCopiloto     = 1;
+static int g_nivelAbrochadoPasajeroIzq = 1;
+static int g_nivelAbrochadoPasajeroMed = 1;
+static int g_nivelAbrochadoPasajeroDer = 1;
+Cada asiento procesa su lectura mediante la siguiente abstracción matemática:$$\text{Estado} = (\text{gpio\_get\_level}(\text{pin}) == \text{nivelAbrochado})$$Donde $\text{Estado} = \text{true}$ representa siempre que el cinturón está abrochado, independientemente de la polaridad eléctrica del conmutador físico.4.2 Algoritmo de Detección de MovimientoEl sistema mantiene un búfer circular de tamaño $N = 10$ para las lecturas de aceleración.Aceleración vectorial instantánea:$$A = \sqrt{a_x^2 + a_y^2 + a_z^2}$$Media muestral ($\mu$):$$\mu = \frac{1}{N} \sum_{i=1}^{N} A_i$$Desviación estándar ($\sigma$):$$\sigma = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (A_i - \mu)^2}$$Si $\sigma > g\_desvioUmbral$ durante el tiempo configurado de tolerancia ($g\_toleranciaMovimientoSeg$), se valida la condición carroEnMovimiento = true.5. ARQUITECTURA DE SOFTWARE (TAREAS FREERTOS)El firmware se divide en 6 tareas concurrentes distribuidas en los dos núcleos del ESP32:                  ┌─────────────────────────────────────────┐
+                  │           app_main (Init/NVS)           │
+                  └────────────────────┬────────────────────┘
+                                       │
+      ┌──────────────────┬─────────────┼──────────────┬──────────────────┐
+      ▼                  ▼             ▼              ▼                  ▼
+┌──────────────┐  ┌────────────┐ ┌───────────┐ ┌──────────────┐  ┌──────────────┐
+│ Task_Pulsador│  │Task_Cintu- │ │Task_Audio │ │Task_Acelero- │  │Task_Teleme-  │
+│  (Prioridad 5)  │  │rones (P. 4) │ │  (P. 3)   │ │ metro (P. 3) │  │  tria (P. 1) │
+└──────────────┘  └────────────┘ └───────────┘ └──────────────┘  └──────────────┘
+                                       │
+                                 ┌─────┴─────┐
+                                 │ Task_Leds │
+                                 │  (P. 4)   │
+                                 └───────────┘
+Task_Pulsador (Núcleo 1, Prioridad 5): Gestiona la selección manual de ocupantes declarados e impide modificaciones inapropiadas en marcha.Task_Cinturones (Núcleo 1, Prioridad 4): Monitorea los GPIOs de los 5 asientos, gestiona la conmutación del relé, valida el estado del vehículo y administra el paso a Light Sleep.Task_Leds (Núcleo 1, Prioridad 4): Actualiza el array de LED NeoPixel WS2812 (Verde = Abrochado, Rojo = Alerta, Apagado = No habilitado/Contacto OFF).Task_Audio (Núcleo 1, Prioridad 3): Envía comandos UART al reproductor DY-SV17F de forma no bloqueante con capacidad de interrupción inmediata si el pasajero se abrocha.Task_Acelerometro (Núcleo 0, Prioridad 3): Efectúa lecturas de alta precisión sobre el bus I2C del LIS3DH y ejecuta la ventana móvil de desviación estándar.Task_Telemetria (Núcleo 1, Prioridad 1): Imprime por UART cada $1000\text{ ms}$ el diagnóstico del sistema y las banderas individuales de infracción.6. MAPA DE REPRODUCCIÓN DE AUDIO (DY-SV17F)Índice TrackEvento DisparadorDuración / Comportamiento1 a 5Confirmación de número de ocupantes declarados ($1$ a $5$).Reproducción única al presionar el pulsador.6Alerta: Cinturón desabrochado en Copiloto.$6\text{ s}$ con re-evaluación e interrupción activa.7Alerta: Cinturón desabrochado en Piloto.$6\text{ s}$ con re-evaluación e interrupción activa.8Alerta: Cinturón desabrochado en Pasajero Derecho.$9\text{ s}$ con re-evaluación e interrupción activa.9Alerta: Cinturón desabrochado en Pasajero Izquierdo.$9\text{ s}$ con re-evaluación e interrupción activa.10Alerta General: Múltiples cinturones desabrochados.$10\text{ s}$ con re-evaluación e interrupción activa.11Bienvenida / Encendido de contacto detectado.Reproducción de inicio.12Confirmación: Todos los cinturones en regla, relé liberado.Reproducción de liberación de ignición.13Alerta: Cinturón desabrochado en Pasajero Medio (Config. 5 asientos).$8\text{ s}$ de reproducción.14Alerta: Cinturón desabrochado en Pasajero Medio (Config. 3 asientos).$6\text{ s}$ de reproducción.7. GUÍA DE DESPLIEGUE Y SUBIDA A GITHUB7.1 Creación del archivo .gitignoreCrear el archivo .gitignore en la raíz del proyecto para no incluir archivos temporales de compilación:build/
+managed_components/
+sdkconfig.old
+.vscode/
+.idea/
+.DS_Store
+7.2 Comandos de Control de Versionesgit init
+git add .
+git commit -m "Initial commit: Sistema de Cinturones 5 Asientos con logica configurable por canal"
+git branch -M main
+git remote add origin git@github.com:Landeo001/Cinturon_5Asientos_Custom.git
+git push -u origin main
+8. CONCLUSIONESAlta Adaptabilidad: La adición de variables independientes de lectura por canal elimina cualquier incompatibilidad física con distintos tipos de broches de seguridad.Seguridad Activa: La combinación de verificación de presencia, relé de corte y acelerómetro evita que el vehículo emprenda marcha sin que todos los pasajeros estén protegidos.Preparado para IoT: Las banderas de infracción estructuradas por asiento facilitan la integración directa con módulos de telemetría GPS/GPRS vía protocolos como MQTT o JSON.
